@@ -18,8 +18,9 @@
                     <div class="flex items-center justify-between">
                         <span class="text-gray-800 font-medium">${ip}</span>
                         <div class="flex items-center space-x-2">
-                            <button class="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600" onclick="deleteIP('${ip}')">Delete</button>
+                            <button class="bg-yellow-500 text-white px-3 py-1 rounded hover:bg-yellow-600" onclick="testConnection('${ip}')">Test</button>
                             <button class="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600" onclick="sendRequest('${ip}')">Send</button>
+                            <button class="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600" onclick="deleteIP('${ip}')">Delete</button>
                         </div>
                     </div>
                     <div id="status-${ip}" class="mt-2 text-sm font-medium text-gray-600">[Idle]</div>
@@ -65,18 +66,40 @@
             }
         }
 
-        async function sendAll() {
-            const response = await fetch('/api/send_all', { method: 'POST' });
+        // 新增：测试单个 IP 连接
+        async function testConnection(ip) {
+            const statusElement = document.getElementById(`status-${ip}`);
+            statusElement.textContent = '[Testing...]';
+            statusElement.className = "mt-2 text-sm font-medium text-blue-500";
+            try {
+                const response = await fetch(`/api/test/${ip}`, { method: 'GET' });
+                const result = await response.json();
+                if (result.status === 'success') {
+                    statusElement.textContent = '[Connected]';
+                    statusElement.className = "mt-2 text-sm font-medium text-green-500";
+                } else {
+                    statusElement.textContent = `[Error: ${result.message}]`;
+                    statusElement.className = "mt-2 text-sm font-medium text-red-500";
+                }
+            } catch (error) {
+                statusElement.textContent = '[Error: Network Issue]';
+                statusElement.className = "mt-2 text-sm font-medium text-red-500";
+            }
+        }
+
+        // 新增：测试所有 IP 的连接
+        async function testAll() {
+            const response = await fetch('/api/test_all', { method: 'GET' });
             const results = await response.json();
             results.forEach(result => {
                 const statusElement = document.getElementById(`status-${result.ip}`);
                 if (statusElement) {
                     if (result.status === 'success') {
-                        statusElement.textContent = '[Success]';
-                        statusElement.className = "mt-2 text-sm font-medium text-green-500"; // 绿色表示成功
+                        statusElement.textContent = '[Connected]';
+                        statusElement.className = "mt-2 text-sm font-medium text-green-500";
                     } else {
                         statusElement.textContent = `[Error: ${result.message}]`;
-                        statusElement.className = "mt-2 text-sm font-medium text-red-500"; // 红色表示错误
+                        statusElement.className = "mt-2 text-sm font-medium text-red-500";
                     }
                 }
             });
@@ -101,11 +124,19 @@
                 Add
             </button>
         </div>
-        <button 
-            onclick="sendAll()" 
-            class="w-full bg-blue-500 text-white px-6 py-3 rounded-lg hover:bg-blue-600 transition mb-6">
-            Send to All
-        </button>
+        <div class="flex items-center justify-between mb-6">
+            <button 
+                onclick="sendAll()" 
+                class="w-1/2 bg-blue-500 text-white px-6 py-3 rounded-lg hover:bg-blue-600 transition mr-2">
+                Send to All
+            </button>
+            <!-- 新增：测试所有 IP 的按钮 -->
+            <button 
+                onclick="testAll()" 
+                class="w-1/2 bg-yellow-500 text-white px-6 py-3 rounded-lg hover:bg-yellow-600 transition ml-2">
+                Test All
+            </button>
+        </div>
         <ul id="ip-list" class="space-y-2">
             <!-- IP items will be dynamically added here -->
         </ul>

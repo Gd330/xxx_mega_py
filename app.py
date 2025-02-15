@@ -43,7 +43,7 @@ def delete_ip(ip):
 
 def send_post_request(ip):
     """
-    发送 POST 请求到指定 IP，带超时和错误处理
+    发送 POST 请求到指定 IP 的 /run 接口，带超时和错误处理
     """
     try:
         response = requests.post(f'http://{ip}:5000/run', timeout=1)
@@ -58,7 +58,7 @@ def send_post_request(ip):
 @app.route('/api/send/<ip>', methods=['POST'])
 def send_request(ip):
     """
-    发送 POST 请求到指定 IP
+    发送 POST 请求到指定 IP 的 /run 接口
     """
     result = send_post_request(ip)
     if result["status"] == "success":
@@ -69,11 +69,49 @@ def send_request(ip):
 @app.route('/api/send_all', methods=['POST'])
 def send_request_all():
     """
-    向所有 IP 地址发送 POST 请求
+    向所有 IP 地址发送 POST 请求到 /run 接口
     """
     results = [send_post_request(ip) for ip in ip_list]
     print(results)  # 打印详细结果到控制台
     return jsonify(results)
+
+# ----------------------- 新增测试连接功能 -----------------------
+
+def send_test_request(ip):
+    """
+    发送 GET 请求到指定 IP 的 /test 接口，用于测试连接
+    """
+    try:
+        response = requests.get(f'http://{ip}:5000/test', timeout=1)
+        return {"ip": ip, "status": "success", "response": response.text}
+    except requests.exceptions.Timeout:
+        return {"ip": ip, "status": "error", "message": "Request timed out"}
+    except requests.exceptions.ConnectionError:
+        return {"ip": ip, "status": "error", "message": "Connection error"}
+    except requests.exceptions.RequestException as e:
+        return {"ip": ip, "status": "error", "message": f"Unexpected error: {str(e)}"}
+
+@app.route('/api/test/<ip>', methods=['GET'])
+def test_request(ip):
+    """
+    测试指定 IP 的连接
+    """
+    result = send_test_request(ip)
+    if result["status"] == "success":
+        return jsonify(result), 200
+    else:
+        return jsonify(result), 500
+
+@app.route('/api/test_all', methods=['GET'])
+def test_request_all():
+    """
+    测试所有 IP 地址的连接
+    """
+    results = [send_test_request(ip) for ip in ip_list]
+    print(results)
+    return jsonify(results)
+
+# ----------------------- 结束新增 -----------------------
 
 if __name__ == '__main__':
     app.run(debug=True)

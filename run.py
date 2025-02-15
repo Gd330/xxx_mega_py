@@ -6,7 +6,7 @@ app = Flask(__name__)
 
 def simulate_keypress():
     """
-    Simulates pressing the 'F' key on the keyboard.
+    模拟按下键盘上的 'F' 键
     """
     print("Simulating pressing the 'F' key...")
     pyautogui.press('f')
@@ -15,12 +15,19 @@ def simulate_keypress():
 @app.route('/run', methods=['POST'])
 def run_script():
     """
-    Endpoint to trigger the keypress simulation.
+    触发按键模拟
     """
     simulate_keypress()
     return "Script executed on server", 200
 
+@app.route('/test', methods=['GET'])
+def test_connection():
+    """
+    用于测试连接的接口，不会执行任何操作，只返回连接成功的响应
+    """
+    return "Connected", 200
+
 if __name__ == "__main__":
-    # Delay to give the user time to focus on the target application
+    # 延时让用户有时间切换到目标应用
     print("Starting Flask server. Switch to the target application if needed.")
     app.run(host="0.0.0.0", port=5000)
