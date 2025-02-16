@@ -126,6 +126,46 @@
       }
     }
 
+    async function testAll() {
+      // 先获取所有 IP
+      const ipsResponse = await fetch('/api/ips');
+      const ips = await ipsResponse.json();
+      ips.forEach(ip => {
+        const statusElement = document.getElementById(`status-${ip}`);
+        if (statusElement) {
+          statusElement.textContent = '[Testing All...]';
+          statusElement.className = "mt-2 text-sm font-medium text-blue-500";
+        }
+      });
+
+      try {
+        const response = await fetch('/api/test_all', { method: 'GET' });
+        const results = await response.json();
+        results.forEach(result => {
+          const statusElement = document.getElementById(`status-${result.ip}`);
+          if (statusElement) {
+            if (result.status === 'success') {
+              statusElement.textContent = '[Connected]';
+              statusElement.className = "mt-2 text-sm font-medium text-green-500";
+            } else {
+              statusElement.textContent = `[Error: ${result.message}]`;
+              statusElement.className = "mt-2 text-sm font-medium text-red-500";
+            }
+          }
+        });
+      } catch (error) {
+        console.error("Network error when testing all:", error);
+        ips.forEach(ip => {
+          const statusElement = document.getElementById(`status-${ip}`);
+          if (statusElement) {
+            statusElement.textContent = '[Error: Network Issue]';
+            statusElement.className = "mt-2 text-sm font-medium text-red-500";
+          }
+        });
+      }
+    }
+
+
     document.addEventListener('DOMContentLoaded', fetchIPs);
   </script>
 </head>
