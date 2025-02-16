@@ -7,11 +7,11 @@ app = Flask(__name__)
 
 def simulate_keypress():
     """
-    模拟按下键盘上的 'F' 键
+    模拟按下键盘上的 'F7' 键
     """
-    print("Simulating pressing the 'F' key...")
-    pyautogui.press('f')
-    print("Key 'F' pressed.")
+    print("Simulating pressing the 'F7' key...")
+    pyautogui.press('f7')
+    print("Key 'F7' pressed.")
 
 @app.route('/run', methods=['POST'])
 def run_script():
