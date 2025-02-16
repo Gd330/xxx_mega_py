@@ -114,4 +114,5 @@ def test_request_all():
 # ----------------------- 结束新增 -----------------------
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(debug=True, host="0.0.0.0")
+
