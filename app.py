@@ -1,11 +1,19 @@
 from flask import Flask, jsonify, request, send_from_directory
 import os
 import requests
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
 app = Flask(__name__)
 
 # 用于存储目标 IP 地址的列表，并添加默认 IP 地址
-ip_list = ["192.168.1.28", "192.168.1.26", "192.168.1.22", "192.168.1.38", "192.168.1.40", "192.168.1.67"]
+ip_list = [
+    "192.168.1.28", 
+    "192.168.1.26", 
+    "192.168.1.22", 
+    "192.168.1.38", 
+    "192.168.1.40", 
+    "192.168.1.67"
+    ]
 
 @app.route('/')
 def index():
@@ -69,9 +77,15 @@ def send_request(ip):
 @app.route('/api/send_all', methods=['POST'])
 def send_request_all():
     """
-    向所有 IP 地址发送 POST 请求到 /run 接口
+    向所有 IP 地址发送 POST 请求到 /run 接口，使用并发方式
     """
-    results = [send_post_request(ip) for ip in ip_list]
+    results = []
+    # 这里设置最大并发线程数，根据实际情况调整
+    with ThreadPoolExecutor(max_workers=10) as executor:
+        future_to_ip = {executor.submit(send_post_request, ip): ip for ip in ip_list}
+        for future in as_completed(future_to_ip):
+            result = future.result()
+            results.append(result)
     print(results)  # 打印详细结果到控制台
     return jsonify(results)
 
@@ -115,4 +129,3 @@ def test_request_all():
 
 if __name__ == '__main__':
     app.run(debug=True, host="0.0.0.0")
-
