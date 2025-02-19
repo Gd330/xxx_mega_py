@@ -1,4 +1,6 @@
 @echo off
+echo Updating repository...
+git pull origin master
 echo Starting the web service...
 python app.py
 pause
