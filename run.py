@@ -5,20 +5,22 @@ from flask import Flask, request
 
 app = Flask(__name__)
 
-def simulate_keypress():
+def simulate_keypress(key='f7'):
     """
-    模拟按下键盘上的 'F7' 键
+    模拟按下指定的键盘按键（默认 F7）
     """
-    print("Simulating pressing the 'F7' key...")
-    pyautogui.press('f7')
-    print("Key 'F7' pressed.")
+    print(f"Simulating pressing the '{key}' key...")
+    pyautogui.press(key)
+    print(f"Key '{key}' pressed.")
 
 @app.route('/run', methods=['POST'])
 def run_script():
     """
-    触发按键模拟
+    从请求中获取按键参数，并触发按键模拟
     """
-    simulate_keypress()
+    data = request.get_json() or {}
+    key = data.get("key", "f7")
+    simulate_keypress(key)
     return "Script executed on server", 200
 
 @app.route('/test', methods=['GET'])

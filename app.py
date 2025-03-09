@@ -13,7 +13,7 @@ ip_list = [
     "192.168.1.38", 
     "192.168.1.40", 
     "192.168.1.67"
-    ]
+]
 
 @app.route('/')
 def index():
@@ -49,12 +49,12 @@ def delete_ip(ip):
         ip_list.remove(ip)
     return jsonify({"status": "success", "ips": ip_list})
 
-def send_post_request(ip):
+def send_post_request(ip, key='f7'):
     """
-    发送 POST 请求到指定 IP 的 /run 接口，带超时和错误处理
+    发送 POST 请求到指定 IP 的 /run 接口，携带按键参数，带超时和错误处理
     """
     try:
-        response = requests.post(f'http://{ip}:5000/run', timeout=1)
+        response = requests.post(f'http://{ip}:5000/run', json={"key": key}, timeout=1)
         return {"ip": ip, "status": "success", "response": response.text}
     except requests.exceptions.Timeout:
         return {"ip": ip, "status": "error", "message": "Request timed out"}
@@ -66,9 +66,11 @@ def send_post_request(ip):
 @app.route('/api/send/<ip>', methods=['POST'])
 def send_request(ip):
     """
-    发送 POST 请求到指定 IP 的 /run 接口
+    发送 POST 请求到指定 IP 的 /run 接口，同时传递用户选择的按键
     """
-    result = send_post_request(ip)
+    data = request.get_json() or {}
+    key = data.get("key", "f7")
+    result = send_post_request(ip, key)
     if result["status"] == "success":
         return jsonify(result), 200
     else:
@@ -77,12 +79,14 @@ def send_request(ip):
 @app.route('/api/send_all', methods=['POST'])
 def send_request_all():
     """
-    向所有 IP 地址发送 POST 请求到 /run 接口，使用并发方式
+    向所有 IP 地址发送 POST 请求到 /run 接口，使用并发方式，并传递按键参数
     """
+    data = request.get_json() or {}
+    key = data.get("key", "f7")
     results = []
     # 这里设置最大并发线程数，根据实际情况调整
     with ThreadPoolExecutor(max_workers=10) as executor:
-        future_to_ip = {executor.submit(send_post_request, ip): ip for ip in ip_list}
+        future_to_ip = {executor.submit(send_post_request, ip, key): ip for ip in ip_list}
         for future in as_completed(future_to_ip):
             result = future.result()
             results.append(result)

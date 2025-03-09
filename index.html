@@ -29,6 +29,12 @@
       });
     }
 
+    // 新增：获取用户选择的按键，默认 F7
+    function getSelectedKey() {
+      const key = document.getElementById('key-input').value.trim();
+      return key ? key : "F7";
+    }
+
     async function addIP() {
       const ip = document.getElementById('ip-input').value;
       if (!ip) return alert('Please enter an IP address');
@@ -50,8 +56,13 @@
       const statusElement = document.getElementById(`status-${ip}`);
       statusElement.textContent = '[Sending...]';
       statusElement.className = "mt-2 text-sm font-medium text-blue-500";
+      const key = getSelectedKey();
       try {
-        const response = await fetch(`/api/send/${ip}`, { method: 'POST' });
+        const response = await fetch(`/api/send/${ip}`, { 
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ key: key })
+        });
         const result = await response.json();
         if (result.status === 'success') {
           statusElement.textContent = '[Success]';
@@ -86,7 +97,7 @@
       }
     }
 
-    // 新增：向所有 IP 发送请求的函数
+    // 修改：向所有 IP 发送请求时也传递按键参数
     async function sendAll() {
       // 先获取所有 IP
       const ipsResponse = await fetch('/api/ips');
@@ -98,9 +109,13 @@
           statusElement.className = "mt-2 text-sm font-medium text-blue-500";
         }
       });
-
+      const key = getSelectedKey();
       try {
-        const response = await fetch('/api/send_all', { method: 'POST' });
+        const response = await fetch('/api/send_all', { 
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ key: key })
+        });
         const results = await response.json();
         results.forEach(result => {
           const statusElement = document.getElementById(`status-${result.ip}`);
@@ -137,7 +152,6 @@
           statusElement.className = "mt-2 text-sm font-medium text-blue-500";
         }
       });
-
       try {
         const response = await fetch('/api/test_all', { method: 'GET' });
         const results = await response.json();
@@ -165,13 +179,25 @@
       }
     }
 
-
     document.addEventListener('DOMContentLoaded', fetchIPs);
   </script>
 </head>
 <body class="bg-gray-50 min-h-screen flex items-center justify-center">
   <div class="w-full max-w-3xl bg-white p-6 rounded-lg shadow-lg">
     <h1 class="text-2xl font-bold text-gray-800 mb-6 text-center">IP Manager</h1>
+    
+    <!-- 新增：按键选择输入框 -->
+    <div class="mb-4">
+      <label for="key-input" class="block text-gray-700 font-medium mb-1">选择按键 (默认 F7):</label>
+      <input 
+        type="text" 
+        id="key-input" 
+        placeholder="F7" 
+        value="F7"
+        class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-400 focus:outline-none"
+      />
+    </div>
+    
     <div class="flex items-center space-x-4 mb-6">
       <input 
         type="text" 
