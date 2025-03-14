@@ -2,6 +2,7 @@ from flask import Flask, jsonify, request, send_from_directory
 import os
 import requests
 from concurrent.futures import ThreadPoolExecutor, as_completed
+import socket
 
 app = Flask(__name__)
 
@@ -130,6 +131,24 @@ def test_request_all():
     return jsonify(results)
 
 # ----------------------- 结束新增 -----------------------
+
+# 新增：获取主机 IP 地址的函数
+def get_host_ips():
+    host_name = socket.gethostname()
+    try:
+        host_ips = socket.gethostbyname_ex(host_name)[2]
+    except socket.error:
+        host_ips = ['127.0.0.1']
+    return host_ips
+
+@app.route('/api/server_info', methods=['GET'])
+def server_info():
+    """
+    提供服务器的 IP 信息，并检查是否为预期的 192.168.0.254
+    """
+    host_ips = get_host_ips()
+    is_correct = "192.168.0.254" in host_ips
+    return jsonify({"server_ips": host_ips, "is_correct": is_correct})
 
 if __name__ == '__main__':
     app.run(debug=True, host="0.0.0.0")
