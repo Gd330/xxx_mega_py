@@ -1,6 +1,4 @@
 @echo off
-@REM echo Updating repository...
-@REM git pull origin master
 echo Starting the web service...
 python app.py
 pause

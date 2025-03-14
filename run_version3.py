@@ -1,6 +1,7 @@
 import pyautogui
 import time
 import socket
+import requests
 from flask import Flask, request
 
 app = Flask(__name__)
@@ -36,14 +37,35 @@ def get_ip_addresses():
     """
     host_name = socket.gethostname()
     try:
-        # 获取所有与主机名关联的 IP 地址
         host_ips = socket.gethostbyname_ex(host_name)[2]
     except socket.error:
         host_ips = ['127.0.0.1']
     return host_ips
 
+def get_client_ip():
+    """
+    从本机所有 IP 中选择一个符合 192.168.0.x 且不是 192.168.0.254 的 IP
+    """
+    ips = get_ip_addresses()
+    for ip in ips:
+        if ip.startswith("192.168.0.") and ip != "192.168.0.254":
+            return ip
+    return None
+
 if __name__ == "__main__":
-    # 延时让用户有时间切换到目标应用
+    # 尝试自动发送本机 IP 到主机服务器
+    client_ip = get_client_ip()
+    if client_ip:
+        try:
+            url = "http://192.168.0.254:5000/api/ips"
+            response = requests.post(url, json={"ip": client_ip}, timeout=2)
+            if response.status_code != 200:
+                print("\033[91m错误：发送IP到主机失败，状态码：{}\033[0m".format(response.status_code))
+        except Exception as e:
+            print("\033[91m错误：发送IP到主机失败：{}\033[0m".format(e))
+    else:
+        print("\033[91m错误：未找到符合条件的本机 IP。\033[0m")
+    
     print("Starting Flask server. Switch to the target application if needed.")
     
     # 打印所有本机 IP 地址

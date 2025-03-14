@@ -29,6 +29,19 @@
       });
     }
 
+    // 新增：检查服务器 IP 是否为预期的 192.168.0.255
+    async function checkServerIP() {
+      try {
+        const response = await fetch('/api/server_info');
+        const serverInfo = await response.json();
+        if (!serverInfo.is_correct) {
+          alert(`警告：主机 IP 不正确！当前主机 IP 列表: ${serverInfo.server_ips.join(', ')}`);
+        }
+      } catch (error) {
+        console.error("无法获取主机信息", error);
+      }
+    }
+
     // 新增：获取用户选择的按键，默认 F7
     function getSelectedKey() {
       const key = document.getElementById('key-input').value.trim();
@@ -179,7 +192,10 @@
       }
     }
 
-    document.addEventListener('DOMContentLoaded', fetchIPs);
+    document.addEventListener('DOMContentLoaded', () => {
+      fetchIPs();
+      checkServerIP();
+    });
   </script>
 </head>
 <body class="bg-gray-50 min-h-screen flex items-center justify-center">
