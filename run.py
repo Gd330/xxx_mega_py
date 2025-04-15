@@ -1,6 +1,7 @@
 import pyautogui
 import time
 import socket
+import win32gui
 from flask import Flask, request
 
 app = Flask(__name__)
@@ -13,11 +14,20 @@ def simulate_keypress(key='f7'):
     pyautogui.press(key)
     print(f"Key '{key}' pressed.")
 
+def set_foreground_window(window_title):
+    # 根据窗口标题获取窗口句柄
+    hwnd = win32gui.FindWindow(None, window_title)
+    if hwnd:
+        win32gui.SetForegroundWindow(hwnd)
+    else:
+        print(f"窗口 '{window_title}' 未找到")
+
 @app.route('/run', methods=['POST'])
 def run_script():
     """
     从请求中获取按键参数，并触发按键模拟
     """
+    set_foreground_window("鼠大侠2.0")
     data = request.get_json() or {}
     key = data.get("key", "f7")
     simulate_keypress(key)
