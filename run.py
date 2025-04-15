@@ -1,7 +1,6 @@
 import pyautogui
 import time
 import socket
-import win32gui
 from flask import Flask, request
 
 app = Flask(__name__)
@@ -14,21 +13,19 @@ def simulate_keypress(key='f7'):
     pyautogui.press(key)
     print(f"Key '{key}' pressed.")
 
-def set_foreground_window(window_title):
-    # 根据窗口标题获取窗口句柄
-    hwnd = win32gui.FindWindow(None, window_title)
-    if hwnd:
-        win32gui.SetForegroundWindow(hwnd)
-    else:
-        print(f"窗口 '{window_title}' 未找到")
+def click_on_desktop():
+    """
+    模拟鼠标点击桌面上某个区域，用于将焦点切换到桌面。
+    这里选择屏幕坐标 (100, 100) 作为示例位置，你可以根据实际情况进行调整。
+    """
+    pyautogui.click(422, 1054)
 
 @app.route('/run', methods=['POST'])
 def run_script():
     """
     从请求中获取按键参数，并触发按键模拟
     """
-    desktop_hwnd = win32gui.GetDesktopWindow()
-    set_foreground_window(desktop_hwnd)
+    click_on_desktop()
     data = request.get_json() or {}
     key = data.get("key", "f7")
     simulate_keypress(key)
