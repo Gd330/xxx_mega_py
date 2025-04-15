@@ -27,7 +27,8 @@ def run_script():
     """
     从请求中获取按键参数，并触发按键模拟
     """
-    set_foreground_window("鼠大侠2.0")
+    desktop_hwnd = win32gui.GetDesktopWindow()
+    set_foreground_window(desktop_hwnd)
     data = request.get_json() or {}
     key = data.get("key", "f7")
     simulate_keypress(key)
